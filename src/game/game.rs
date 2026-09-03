@@ -46,7 +46,7 @@ pub impl SuitCounts {
 }
 
 impl Board {
-    fn actual_suit_counts(&self) -> SuitCounts {
+    pub fn actual_suit_counts(&self) -> SuitCounts {
         SuitCounts::from_fn(|role| {
             let mut count = SuitCount::default();
 
@@ -58,7 +58,7 @@ impl Board {
         })
     }
 
-    fn predicted_suit_counts(&self) -> SuitCounts {
+    pub fn predicted_suit_counts(&self) -> SuitCounts {
         let mut counts = self.actual_suit_counts();
 
         if let Some(pos) = self.selected {

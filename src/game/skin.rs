@@ -47,11 +47,11 @@ impl SuitSkin {
         }
     }
 
-    pub fn font(self) -> &'static str {
-        match self {
-            SuitSkin::Animals => "'Noto Color Emoji'",
-        }
-    }
+    // pub fn font(self) -> &'static str {
+    //     match self {
+    //         SuitSkin::Animals => "'Noto Color Emoji'",
+    //     }
+    // }
 }
 
 const COLOR_GREEN: [&str; 2] = ["#062", "#00ff55"];

@@ -1,7 +1,56 @@
 use dioxus::prelude::*;
 use glam::Vec2;
+use strum::IntoEnumIterator;
 
-use crate::{components::{CARD_BORDER_RADIUS_RATIO, CARD_HEIGHT_RATIO, CardComponent, CardFrame, rem}, game::{AnimationKey, Board, BoardPos, DepotRole, GameStatus, NUM_DEPOTS, Skin}};
+use crate::{components::{CARD_BORDER_RADIUS_RATIO, CARD_HEIGHT_RATIO, CardComponent, CardFrame, Emoji, SkinTrait, rem}, game::{AnimationKey, Board, BoardPos, Card, DepotRole, GameStatus, NUM_DEPOTS, Skin, Suit, SuitCount, SuitCountExt}};
+
+#[component]
+fn SuitCountComponent(
+    position: Vec2,
+    width: f32,
+    skin: Skin,
+    suit_count: SuitCount
+) -> Element {
+    let dangers = suit_count.find_dangers();
+
+    rsx! {
+        div {
+            position: "absolute",
+            top: rem(position.y),
+            left: rem(position.x),
+            font_size: rem(3.5),
+            width: rem(width),
+            display: "grid",
+            grid_template_columns: "auto auto auto",
+            text_align: "center",
+
+            for suit in Suit::iter() {
+                div {
+                    position: "relative",
+                    if dangers.contains(suit) {
+                        div {
+                            position: "absolute", top: 0, left: 0,
+                            width: "100%",
+                            class: "blink",
+                            Emoji {
+                                text: "⚠️"
+                            }
+                        }
+                    }
+
+                    {skin.render_suit(&Card { rank: 1, suit })}
+                }
+            }
+
+            for suit in Suit::iter() {
+                div {
+                    color: if dangers.contains(suit) {"#ff0"} else {"#fff"},
+                    "{suit_count[suit]}",
+                }
+            }
+        }
+    }
+}
 
 #[component]
 pub fn BoardComponent(
@@ -22,9 +71,10 @@ pub fn BoardComponent(
 
     let half_tableau_width = 3. * card_width + 2. * spacer_x;
     let start_y = 2f32;
-    let tableau_y = start_y + 6f32;
+    let tableau_y = start_y + 10f32;
     let right_tableau_x = 100. - start_x - half_tableau_width;
-    let column_card_offset = Vec2::new(0., card_height / 2.);
+    // let column_card_offset = Vec2::new(0., card_height / 2.);
+    let column_card_offset = Vec2::new(0., 5.825);
 
     let get_pos = |depot: usize, ord: usize| {
         let (role, index) = DepotRole::role_and_subindex(depot).unwrap();
@@ -50,7 +100,7 @@ pub fn BoardComponent(
 
     let river_width = card_width * 2.;
     let river_x = 50. - river_width / 2.;
-    let river_height = 100f32 * 16. / 9. - 20.01 - start_y;
+    let river_height = 100f32 * 16. / 9. - 20. - start_y;
 
     let river = rsx! {
         div {
@@ -63,6 +113,33 @@ pub fn BoardComponent(
         }
     };
 
+    let suit_counts = board.predicted_suit_counts();
+    // // test
+    // let mut suit_counts = suit_counts;
+    // suit_counts[DepotRole::Left][Suit::Carrot] = 0;
+
+    let suit_count_width = 17f32;
+    let suit_count_components = DepotRole::iter().map(|role| {
+        let pos_x = get_pos(role.id(1), 0).x + (card_width - suit_count_width) / 2.;
+        rsx! {
+            SuitCountComponent { 
+                position: Vec2::new(pos_x, start_y),
+                width: suit_count_width,
+                skin,
+                suit_count: suit_counts[role],
+            }
+        }
+    });
+
+    // let test_card = rsx! {
+    //     CardComponent { 
+    //         position: get_pos(0, 24),
+    //         width: card_width,
+    //         card: Card { suit: Suit::Fox, rank: 1 },
+    //         // number_hint: if !is_face_up(depot) {i + 1},
+    //         skin,
+    //     }
+    // };
 
     rsx! {
         div {
@@ -70,7 +147,10 @@ pub fn BoardComponent(
             top: rem(position.y),
             left: rem(position.x),
 
+            // {test_card},
+
             {river},
+            {suit_count_components},
 
             for depot in 0..NUM_DEPOTS {
                 if let Some(hint) = get_hint(depot) {
