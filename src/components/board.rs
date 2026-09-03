@@ -2,7 +2,7 @@ use dioxus::prelude::*;
 use glam::Vec2;
 use strum::IntoEnumIterator;
 
-use crate::{components::{CARD_BORDER_RADIUS_RATIO, CARD_HEIGHT_RATIO, CardComponent, CardFrame, EMOJI_MAP, Emoji, SkinTrait, rem}, game::{ANIMATION_DURATION, AnimationKey, Board, BoardPos, Card, DepotRole, GameStatus, NUM_DEPOTS, Skin, Suit, SuitCount, SuitCountExt}};
+use crate::{components::{CARD_BORDER_RADIUS_RATIO, CARD_HEIGHT_RATIO, CardComponent, CardFrame, EMOJI_MAP, Emoji, Movement, SkinTrait, rem}, game::{ANIMATION_DURATION, AnimationAct, AnimationKey, Board, BoardPos, Card, DepotRole, GameStatus, NUM_DEPOTS, Skin, Suit, SuitCount, SuitCountExt}};
 
 #[component]
 fn SuitCountComponent(
@@ -64,6 +64,8 @@ pub fn BoardComponent(
     #[props(default)]
     game_status: GameStatus,
 ) -> Element {
+    // let game_status = GameStatus::Lost { danger: Suit::Carrot };
+
     let card_width = 11f32;
     let card_height = card_width * CARD_HEIGHT_RATIO;
     let spacer_x = 1f32;
@@ -181,6 +183,77 @@ pub fn BoardComponent(
     //     }
     // };
 
+    let moving_card = |p1: Vec2, p2: Vec2, card: Card| rsx! {
+        Movement {
+            src_translate_vec: p1 - p2,
+            CardComponent {
+                position: p2,
+                width: card_width,
+                card: card,
+                skin,
+            }
+        }
+    };
+
+    let anims = board.animation_acts.iter().enumerate().map(|(i, act)| {
+        match act {
+            AnimationAct::Move (cards, pos1, pos2) => {
+                let mut pos1 = *pos1;
+                let mut pos2 = *pos2;
+
+                let nodes = cards.iter().map(move |card| {
+                    let p1 = get_pos(pos1.depot_index, pos1.card_index);
+                    let p2 = get_pos(pos2.depot_index, pos2.card_index);
+                    let res = moving_card(p1, p2, *card);
+                    pos1.card_index += 1;
+                    pos2.card_index += 1;
+                    res
+                });
+
+                rsx! {
+                    Fragment {
+                        key: "{animation_key},{i}", // needed to force remounts, so animations don't get "stale" and refuse to replay
+                        {nodes}
+                    }
+                }
+            },
+        }
+    });
+
+    let is_won = game_status == GameStatus::Won;
+    let lose_message = if let GameStatus::Lost { danger } = game_status {
+        let pred = match danger {
+            Suit::Fox => "?", // shouldn't happen
+            Suit::Rabbit => "foxes",
+            Suit::Carrot => "rabbits",
+        };
+        let prey = match danger {
+            Suit::Fox => "Foxes",
+            Suit::Rabbit => "Rabbits",
+            Suit::Carrot => "Carrots",
+        };
+
+        rsx! {
+            div {
+                position: "absolute",
+                top: rem(25.),
+                left: rem(17.5),
+                width: rem(59.),
+                background_color: "#000",
+                padding: rem(3.),
+                color: "#fff",
+                font_size: rem(7.),
+                border_radius: rem(2.),
+                text_align: "center",
+                "GAME OVER",
+                p {
+                    font_size: rem(3.),
+                    "Too many {pred}! {prey} were eaten…"
+                }
+            }
+        }
+    } else {rsx!{}};
+
     rsx! {
         div {
             position: "absolute",
@@ -230,6 +303,26 @@ pub fn BoardComponent(
                         },
                     }
                 }
+            }
+
+            {anims},
+
+            if is_won {
+                div {
+                    position: "absolute",
+                    top: rem(25.),
+                    left: rem(17.5),
+                    width: rem(59.),
+                    background_color: "#505",
+                    padding: rem(3.),
+                    color: "#fff",
+                    font_size: rem(7.),
+                    border_radius: rem(2.),
+                    text_align: "center",
+                    "YOU WIN!",
+                }
+            } else {
+                {lose_message}
             }
         }
     }
