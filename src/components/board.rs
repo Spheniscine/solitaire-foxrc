@@ -48,11 +48,29 @@ pub fn BoardComponent(
         card_height + column_card_offset.y * d as f32
     } else {0.};
 
-    rsx!{
+    let river_width = card_width * 2.;
+    let river_x = 50. - river_width / 2.;
+    let river_height = 100f32 * 16. / 9. - 20.01 - start_y;
+
+    let river = rsx! {
+        div {
+            position: "absolute",
+            top: rem(start_y),
+            left: rem(river_x),
+            width: rem(river_width),
+            height: rem(river_height),
+            background_color: "#4276A9",
+        }
+    };
+
+
+    rsx! {
         div {
             position: "absolute",
             top: rem(position.y),
             left: rem(position.x),
+
+            {river},
 
             for depot in 0..NUM_DEPOTS {
                 if let Some(hint) = get_hint(depot) {
