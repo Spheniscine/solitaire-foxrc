@@ -1,5 +1,6 @@
-use std::ops::Range;
+use std::ops::{Not, Range};
 
+use enum_map::Enum;
 use serde::{Deserialize, Serialize};
 use serde_tuple::{Deserialize_tuple, Serialize_tuple};
 use strum::{IntoEnumIterator, VariantArray};
@@ -7,7 +8,7 @@ use strum_macros::{EnumIter, VariantArray};
 
 use crate::game::{Card, DECK_SIZE, NUM_SUITS};
 
-#[derive(Copy, Clone, Serialize, Deserialize, Debug, PartialEq, Eq, EnumIter, VariantArray)]
+#[derive(Copy, Clone, Serialize, Deserialize, Debug, PartialEq, Eq, EnumIter, VariantArray, Enum)]
 #[repr(u8)]
 pub enum DepotRole {
     Left,
@@ -61,6 +62,17 @@ impl DepotRole {
     }
 }
 
+impl Not for DepotRole {
+    type Output = Self;
+
+    fn not(self) -> Self::Output {
+        match self {
+            DepotRole::Left => DepotRole::Right,
+            DepotRole::Right => DepotRole::Left,
+        }
+    }
+}
+
 #[derive(Copy, Clone, Serialize_tuple, Deserialize_tuple, Debug, PartialEq, Eq)]
 pub struct BoardPos {
     pub depot_index: usize,
@@ -81,6 +93,7 @@ pub enum AnimationAct {
 #[derive(Clone, Serialize, Deserialize, Debug, PartialEq, Eq)]
 pub struct Board {
     pub depots: Vec<Vec<Card>>,
+    pub selected: Option<BoardPos>,
     pub boat_pos: DepotRole,
     pub animate_boat: bool,
     pub animation_acts: Vec<AnimationAct>,
@@ -90,6 +103,7 @@ impl Board {
     pub fn empty() -> Self {
         Self {
             depots: vec![vec![]; NUM_DEPOTS],
+            selected: None,
             boat_pos: DepotRole::Left,
             animate_boat: false,
             animation_acts: vec![],
@@ -110,6 +124,7 @@ impl Board {
     }
 
     pub fn do_move(&mut self, pos1: BoardPos, pos2: BoardPos) {
+        self.selected = None;
         let cards = self.depots[pos1.depot_index].drain(pos1.card_index ..).collect();
         self.animation_acts.push(
             AnimationAct::Move(cards, pos1, pos2)

@@ -8,6 +8,9 @@ edition = "2021"
 
 [dependencies]
 dioxus = { version = "0.6.0", features = [] }
+enum-map = "3.1.0"
+enumset = "1.1.14"
+extend = "1.2.0"
 serde = "1.0.229"
 serde_json5 = "0.2.1"
 serde_tuple = "1.1.3"

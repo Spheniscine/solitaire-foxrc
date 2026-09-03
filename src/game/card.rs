@@ -1,10 +1,12 @@
 use std::ops::RangeInclusive;
 
+use enum_map::Enum;
+use enumset::EnumSetType;
 use serde::{Deserialize, Serialize, de::Visitor};
 use strum::EnumCount;
 use strum_macros::{EnumCount, EnumIter};
 
-#[derive(Clone, Copy, PartialEq, Eq, Hash, Debug, EnumCount, EnumIter)]
+#[derive(Hash, Debug, EnumCount, EnumIter, Enum, EnumSetType)]
 pub enum Suit {
     Fox, Rabbit, Carrot
 }
