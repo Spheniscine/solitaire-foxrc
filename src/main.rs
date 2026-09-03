@@ -5,6 +5,7 @@ const MAIN_CSS: Asset = asset!("/assets/main.css");
 const HEADER_SVG: Asset = asset!("/assets/header.svg");
 
 mod game;
+mod components;
 
 fn main() {
     dioxus::launch(App);

@@ -12,6 +12,7 @@ enum-map = "3.1.0"
 enumset = "1.1.14"
 extend = "1.2.0"
 getrandom = { version = "0.4.3", features = ["wasm_js"] }
+phf = { version = "0.14.0", features = ["macros"] }
 rand = "0.10.2"
 serde = "1.0.229"
 serde_json5 = "0.2.1"
