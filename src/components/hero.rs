@@ -66,41 +66,43 @@ pub fn Hero() -> Element {
                     "Wins: {st.num_wins}",
                 }
 
-                // div {
-                //     position: "absolute",
-                //     top: rem(1.5),
-                //     right: rem(2.),
-                //     class: "game-button",
-                //     onclick: move |_| if clean {state.write().screen_state = ScreenState::Settings;},
-                //     "Settings"
-                // }
+                div {
+                    position: "absolute",
+                    top: rem(1.5),
+                    right: rem(2.),
+                    class: "game-button",
+                    // onclick: move |_| if clean {state.write().screen_state = ScreenState::Settings;},
+                    "Settings"
+                }
 
-                // div {
-                //     position: "absolute",
-                //     top: rem(1.5),
-                //     right: rem(30.),
-                //     class: if st.undo_possible() {"game-button"} else {"game-button-disabled"},
-                //     onclick: move |_| if clean {state.write().restart()},
-                //     "Reset"
-                // }
+                div {
+                    position: "absolute",
+                    top: rem(1.5),
+                    right: rem(30.),
+                    class: "game-button",
+                    // class: if st.undo_possible() {"game-button"} else {"game-button-disabled"},
+                    // onclick: move |_| if clean {state.write().restart()},
+                    "Reset"
+                }
 
-                // div {
-                //     position: "absolute",
-                //     top: rem(11.),
-                //     right: rem(2.),
-                //     class: "game-button",
-                //     onclick: move |_| if clean {state.write().screen_state = ScreenState::Help;},
-                //     "Help"
-                // }
+                div {
+                    position: "absolute",
+                    top: rem(11.),
+                    right: rem(2.),
+                    class: "game-button",
+                    // onclick: move |_| if clean {state.write().screen_state = ScreenState::Help;},
+                    "Help"
+                }
 
-                // div {
-                //     position: "absolute",
-                //     top: rem(11.),
-                //     right: rem(30.),
-                //     class: if st.undo_possible() {"game-button"} else {"game-button-disabled"},
-                //     onclick: move |_| if clean {state.write().undo()},
-                //     "Undo"
-                // }
+                div {
+                    position: "absolute",
+                    top: rem(11.),
+                    right: rem(30.),
+                    class: "game-button",
+                    // class: if st.undo_possible() {"game-button"} else {"game-button-disabled"},
+                    // onclick: move |_| if clean {state.write().undo()},
+                    "Undo"
+                }
 
                 BoardComponent { 
                     position: Vec2 { x: 0., y: 20. },
