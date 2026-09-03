@@ -137,7 +137,7 @@ pub fn BoardComponent(
     let animate_boat = board.animate_boat;
 
     let boater_width = 10f32;
-    let boater_y = 60.;
+    let boater_y = 50.;
     let boater_shift = 0.;
     let boater_left_pos = Vec2::new(river_x - boater_shift, boater_y);
     let boater_right_pos = Vec2::new(river_x + river_width - boater_width + boater_shift, boater_y);
