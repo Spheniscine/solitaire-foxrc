@@ -118,7 +118,7 @@ pub fn BoardComponent(
     // let mut suit_counts = suit_counts;
     // suit_counts[DepotRole::Left][Suit::Carrot] = 0;
 
-    let suit_count_width = 17f32;
+    let suit_count_width = 18f32;
     let suit_count_components = DepotRole::iter().map(|role| {
         let pos_x = get_pos(role.id(1), 0).x + (card_width - suit_count_width) / 2.;
         rsx! {
