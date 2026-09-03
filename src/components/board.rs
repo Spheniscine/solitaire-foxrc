@@ -2,7 +2,7 @@ use dioxus::prelude::*;
 use glam::Vec2;
 use strum::IntoEnumIterator;
 
-use crate::{components::{CARD_BORDER_RADIUS_RATIO, CARD_HEIGHT_RATIO, CardComponent, CardFrame, Emoji, SkinTrait, rem}, game::{AnimationKey, Board, BoardPos, Card, DepotRole, GameStatus, NUM_DEPOTS, Skin, Suit, SuitCount, SuitCountExt}};
+use crate::{components::{CARD_BORDER_RADIUS_RATIO, CARD_HEIGHT_RATIO, CardComponent, CardFrame, EMOJI_MAP, Emoji, SkinTrait, rem}, game::{ANIMATION_DURATION, AnimationKey, Board, BoardPos, Card, DepotRole, GameStatus, NUM_DEPOTS, Skin, Suit, SuitCount, SuitCountExt}};
 
 #[component]
 fn SuitCountComponent(
@@ -131,6 +131,46 @@ pub fn BoardComponent(
         }
     });
 
+    let boat_pos = board.boat_pos;
+    let animate_boat = board.animate_boat;
+
+    let boater_width = 10f32;
+    let boater_y = 60.;
+    let boater_shift = 0.;
+    let boater_left_pos = Vec2::new(river_x - boater_shift, boater_y);
+    let boater_right_pos = Vec2::new(river_x + river_width - boater_width + boater_shift, boater_y);
+
+    let boater = (0..1).map(|_|{
+        let mut translate = boater_right_pos - boater_left_pos;
+        if boat_pos != DepotRole::Left { translate = -translate; }
+        let pos = if boat_pos == DepotRole::Left {boater_left_pos} else {boater_right_pos};
+
+        let transform = if boat_pos == DepotRole::Left {
+            "transform: rotateY(180deg);"
+        } else {""};
+
+        rsx!{
+            div {
+                key: "{animation_key},boat",
+                style: "--translateX: {rem(translate.x)}; --translateY: {rem(translate.y)};",
+                
+                div {
+                    position: "absolute",
+                    top: rem(pos.y),
+                    left: rem(pos.x),
+                    transform_style: "preserve-3d",
+                    perspective: "333rem",
+                    animation: if animate_boat {"{ANIMATION_DURATION.as_secs_f32()}s movement-boat"},
+
+                    img {
+                        style: "width: {rem(boater_width)}; {transform}",
+                        src: EMOJI_MAP["🚣"]
+                    }
+                }
+            }
+        }
+    });
+
     // let test_card = rsx! {
     //     CardComponent { 
     //         position: get_pos(0, 24),
@@ -150,6 +190,7 @@ pub fn BoardComponent(
             // {test_card},
 
             {river},
+            {boater},
             {suit_count_components},
 
             for depot in 0..NUM_DEPOTS {

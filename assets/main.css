@@ -193,7 +193,7 @@ button {
     0% {
         transform: translate(var(--translateX), var(--translateY)) rotateY(-180deg);
     }
-    75% {
+    67% {
         transform: translate(0, 0) rotateY(-180deg);
     }
     100% {
