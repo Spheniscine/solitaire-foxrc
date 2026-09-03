@@ -7,7 +7,7 @@ use rand::{Rng, seq::SliceRandom};
 use serde::{Deserialize, Serialize};
 use strum::IntoEnumIterator;
 
-use crate::game::{Board, BoardPos, Card, DECK_SIZE, DepotRole, RANKS, Skin, Suit};
+use crate::game::{Board, BoardPos, Card, DECK_SIZE, DepotRole, NUM_RANKS, RANKS, Skin, Suit};
 
 use super::AnimationAct;
 
@@ -181,15 +181,93 @@ impl GameState {
         
         self.board.advance_actions();
 
-        // if self.is_won() {
-        //     if !self.already_won {
-        //         self.num_wins += 1;
-        //         self.already_won = true;
-        //     }
-        // } else {
-        //     // self.check_auto_moves();
-        // }
+        if self.is_won() {
+            if !self.already_won {
+                self.num_wins += 1;
+                self.already_won = true;
+            }
+        } else {
+            // self.check_auto_moves();
+        }
 
         // if !self.is_busy() { LocalStorage.save_game_state(&self); }
+    }
+
+    pub fn game_status(&self) -> GameStatus {
+        if self.is_busy() { GameStatus::Ongoing }
+        else if DepotRole::Right.range().all(|i| self.board.depots[i].len() == NUM_RANKS) {
+            GameStatus::Won
+        } else if let Some(danger) = self.board.actual_suit_counts().find_first_danger() {
+            GameStatus::Lost { danger }
+        } else {
+            GameStatus::Ongoing
+        }
+    }
+
+    pub fn is_won(&self) -> bool {
+        self.game_status() == GameStatus::Won
+    }
+
+    pub fn is_over(&self) -> bool {
+        self.game_status() != GameStatus::Ongoing
+    }
+
+    pub fn onclick(&mut self, pos: BoardPos) {
+        if self.is_busy() { return; }
+        if self.is_over() { return; }
+
+        if let Some(src) = self.board.selected {
+            if pos == src { 
+                self.board.selected = None; 
+                return;
+            }
+            if src.depot_index == pos.depot_index && self.can_select(pos) {
+                self.board.selected = Some(pos);
+                return;
+            }
+
+            let dest = BoardPos::new(pos.depot_index, pos.card_index.wrapping_add(1));
+            if !self.can_move(src, dest) { return; }
+            self.undo_stack.push(self.history.len());
+            self.do_move_raw(src, dest);
+        } else {
+            if self.can_select(pos) {
+                self.board.selected = Some(pos);
+            }
+        }
+    }
+
+    pub fn can_select(&self, pos: BoardPos) -> bool {
+        let depot = pos.depot_index;
+        let ord = pos.card_index;
+
+        let Some(role) = DepotRole::role(depot) else { return false };
+        if role != self.board.boat_pos { return false };
+
+        if ord >= self.board.depots[depot].len() {
+            return false;
+        }
+        let slice = &self.board.depots[depot][ord..];
+        slice.windows(2).all(|w| self.can_stack(w[0], w[1]))
+    }
+
+    pub fn can_stack(&self, back: Card, front: Card) -> bool {
+        back.suit != front.suit && front.rank < back.rank
+    }
+
+    pub fn can_move(&self, pos1: BoardPos, pos2: BoardPos) -> bool {
+        if pos1.depot_index == pos2.depot_index { return false; }
+        let depot1 = &self.board.depots[pos1.depot_index];
+        let depot2 = &self.board.depots[pos2.depot_index];
+        // let num_moved = depot1.len() - pos1.card_index;
+        if pos2.card_index != depot2.len() { return false; }
+
+        let card = depot1[pos1.card_index];
+        depot2.last().is_none_or(|&c| self.can_stack(c, card))
+    }
+
+    fn do_move_raw(&mut self, pos1: BoardPos, pos2: BoardPos) {
+        self.board.do_move(pos1, pos2);
+        self.history.push(ActionRecord { pos1, pos2 })
     }
 }
