@@ -45,7 +45,7 @@ pub fn CardComponent<C: PartialEq + Clone + 'static, S: SkinTrait<C> + 'static>(
             display: "grid",
             grid_template_columns: "50% 50%",
             grid_template_rows: "50% 50%",
-            font_size: pt(5.),
+            font_size: pt(4.75), // slightly smaller than the 5 point set in most other games
             text_align: "center",
             padding: pt(0.25),
             color: skin.get_color(&card, ColorMode::Dark),

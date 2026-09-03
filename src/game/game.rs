@@ -101,6 +101,14 @@ pub enum ScreenState {
     Settings, Help,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Default)]
+pub enum GameStatus {
+    #[default]
+    Ongoing,
+    Won,
+    Lost { danger: Suit },
+}
+
 #[derive(Clone, Serialize, Deserialize, Debug, PartialEq, Eq)]
 pub struct GameState {
     pub board: Board,
@@ -157,5 +165,31 @@ impl GameState {
         self.undo_stack.clear();
         self.already_won = false;
         // LocalStorage.save_game_state(&self);
+    }
+
+    pub fn is_busy(&self) -> bool {
+        self.is_acting()
+    }
+
+    pub fn is_acting(&self) -> bool {
+        !self.board.animation_acts.is_empty()
+    }
+
+    pub fn advance_animations(&mut self, key: AnimationKey) {
+        if key != self.animation_key { return; }
+        self.animation_key = self.animation_key.wrapping_add(1);
+        
+        self.board.advance_actions();
+
+        // if self.is_won() {
+        //     if !self.already_won {
+        //         self.num_wins += 1;
+        //         self.already_won = true;
+        //     }
+        // } else {
+        //     // self.check_auto_moves();
+        // }
+
+        // if !self.is_busy() { LocalStorage.save_game_state(&self); }
     }
 }
