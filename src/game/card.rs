@@ -79,11 +79,6 @@ impl Card {
         if !RANKS.contains(&rank) { return None; }
         Some(Card { rank, suit })
     }
-
-    /// Stack value in Cribbage = 1 for ace, 10 for face cards
-    pub fn value(self) -> u8 {
-        self.rank.min(10)
-    }
 }
 
 impl Serialize for Card {
